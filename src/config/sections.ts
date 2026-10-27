@@ -535,6 +535,18 @@ export const sections: SectionConfig[] = [
     ],
   },
   {
+    id: 'appeals',
+    title: 'Обращения',
+    related: 'appeals',
+    groups: [],
+  },
+  {
+    id: 'history',
+    title: 'История изменений',
+    related: 'history',
+    groups: [],
+  },
+  {
     id: 'service',
     title: 'Служебная информация',
     groups: [

@@ -14,10 +14,11 @@ import { sections } from '../config/sections'
 import type { Citizen } from '../types/citizen'
 import { formatDate } from '../utils/date'
 import FormField from './FormField'
+import RelatedTable from './RelatedTable'
 import StatusChip from './StatusChip'
 
 function CitizenCardForm({ data }: { data: CitizenCardData }) {
-  const { citizen } = data
+  const { citizen, related } = data
   const { control } = useForm<Citizen>({ defaultValues: citizen })
   const [tab, setTab] = useState(0)
   const section = sections[tab]
@@ -77,6 +78,8 @@ function CitizenCardForm({ data }: { data: CitizenCardData }) {
               </Box>
             </Box>
           ))}
+
+          {section.related && <RelatedTable tableKey={section.related} rows={related[section.related]} />}
         </Box>
       </Paper>
     </Box>

@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react'
 import Box from '@mui/material/Box'
+import Paper from '@mui/material/Paper'
 import Typography from '@mui/material/Typography'
-import { useNavigate } from 'react-router-dom'
 import { DataGrid } from '@mui/x-data-grid'
 import type { GridColDef, GridPaginationModel, GridSortModel } from '@mui/x-data-grid'
 import { emptyFilters } from '../api/citizensApi'
 import { CITIZENS_COUNT } from '../api/generator'
+import CitizenPreview from '../components/CitizenPreview'
 import CitizensFilters from '../components/CitizensFilters'
 import StatusChip from '../components/StatusChip'
 import { useCitizens } from '../hooks/useCitizens'
@@ -27,15 +28,8 @@ const columns: GridColDef<Citizen>[] = [
     width: 130,
     valueFormatter: (value: string) => formatDate(value),
   },
-  { field: 'gender', headerName: 'Пол', width: 100 },
   { field: 'district', headerName: 'Район', flex: 1, minWidth: 120 },
   { field: 'category', headerName: 'Категория', flex: 1, minWidth: 150 },
-  {
-    field: 'registrationDate',
-    headerName: 'На учёте с',
-    width: 120,
-    valueFormatter: (value: string) => formatDate(value),
-  },
   {
     field: 'status',
     headerName: 'Статус',
@@ -45,13 +39,13 @@ const columns: GridColDef<Citizen>[] = [
 ]
 
 function Citizens() {
-  const navigate = useNavigate()
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     page: 0,
     pageSize: 25,
   })
   const [sortModel, setSortModel] = useState<GridSortModel>([])
   const [filters, setFilters] = useState<CitizenFilters>(emptyFilters)
+  const [selectedId, setSelectedId] = useState<number | null>(null)
 
   const params = useMemo(
     () => ({
@@ -80,23 +74,34 @@ function Citizens() {
         </Typography>
       </Box>
       <CitizensFilters onApply={applyFilters} />
-      <Box sx={{ height: 600, bgcolor: 'background.paper' }}>
-        <DataGrid
-          rows={rows}
-          columns={columns}
-          rowCount={total}
-          loading={loading}
-          paginationMode="server"
-          sortingMode="server"
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-          sortModel={sortModel}
-          onSortModelChange={setSortModel}
-          onRowClick={(params) => navigate(`/citizens/${params.id}`)}
-          pageSizeOptions={[10, 25, 50, 100]}
-          disableColumnFilter
-          disableColumnMenu
-        />
+      <Box sx={{ display: 'flex', gap: 2, height: 640 }}>
+        <Box sx={{ flex: 1, minWidth: 0, bgcolor: 'background.paper' }}>
+          <DataGrid
+            rows={rows}
+            columns={columns}
+            rowCount={total}
+            loading={loading}
+            paginationMode="server"
+            sortingMode="server"
+            paginationModel={paginationModel}
+            onPaginationModelChange={setPaginationModel}
+            sortModel={sortModel}
+            onSortModelChange={setSortModel}
+            onRowClick={(params) => setSelectedId(Number(params.id))}
+            pageSizeOptions={[10, 25, 50, 100]}
+            disableColumnFilter
+            disableColumnMenu
+          />
+        </Box>
+        <Box sx={{ width: 460, flexShrink: 0 }}>
+          {selectedId ? (
+            <CitizenPreview key={selectedId} id={selectedId} />
+          ) : (
+            <Paper sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2 }}>
+              <Typography color="text.secondary">Выберите гражданина в списке</Typography>
+            </Paper>
+          )}
+        </Box>
       </Box>
     </Box>
   )
