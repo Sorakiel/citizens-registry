@@ -10,3 +10,12 @@ export function getAge(birthDate: string) {
   }
   return age
 }
+
+// 2000-05-17 -> 17.05.2000
+export function formatDate(date: string) {
+  if (!date) {
+    return ''
+  }
+  const [year, month, day] = date.split('-')
+  return `${day}.${month}.${year}`
+}
