@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
+import { useNavigate } from 'react-router-dom'
 import { DataGrid } from '@mui/x-data-grid'
 import type { GridColDef, GridPaginationModel, GridSortModel } from '@mui/x-data-grid'
 import { emptyFilters } from '../api/citizensApi'
@@ -44,6 +45,7 @@ const columns: GridColDef<Citizen>[] = [
 ]
 
 function Citizens() {
+  const navigate = useNavigate()
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     page: 0,
     pageSize: 25,
@@ -90,6 +92,7 @@ function Citizens() {
           onPaginationModelChange={setPaginationModel}
           sortModel={sortModel}
           onSortModelChange={setSortModel}
+          onRowClick={(params) => navigate(`/citizens/${params.id}`)}
           pageSizeOptions={[10, 25, 50, 100]}
           disableColumnFilter
           disableColumnMenu

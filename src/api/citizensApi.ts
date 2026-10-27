@@ -1,6 +1,6 @@
-import type { Citizen, CitizenFilters } from '../types/citizen'
+import type { Citizen, CitizenFilters, CitizenRelated } from '../types/citizen'
 import { getAge } from '../utils/date'
-import { CITIZENS_COUNT, generateCitizens } from './generator'
+import { CITIZENS_COUNT, generateCitizens, generateDetails, generateRelated } from './generator'
 
 export type SortOrder = 'asc' | 'desc'
 
@@ -99,6 +99,30 @@ export function getCitizens(params: GetCitizensParams): Promise<CitizensResponse
       resolve({
         rows: list.slice(start, start + params.pageSize),
         total: list.length,
+      })
+    }, 200)
+  })
+}
+
+export interface CitizenCardData {
+  citizen: Citizen
+  related: CitizenRelated
+}
+
+export function getCitizen(id: number): Promise<CitizenCardData | null> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // id идут подряд с единицы
+      const citizen = getAllCitizens()[id - 1]
+
+      if (!citizen) {
+        resolve(null)
+        return
+      }
+
+      resolve({
+        citizen: { ...citizen, details: generateDetails(citizen) },
+        related: generateRelated(citizen),
       })
     }, 200)
   })

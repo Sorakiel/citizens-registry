@@ -6,6 +6,7 @@ import type {
   Education,
   Employment,
   FamilyMember,
+  FieldValue,
   HistoryRecord,
 } from '../types/citizen'
 import {
@@ -20,6 +21,7 @@ import {
   maritalStatuses,
   statuses,
 } from '../config/dictionaries'
+import { getAllFields } from '../config/sections'
 import { getAge } from '../utils/date'
 import { createRandom, randomDate } from './random'
 import type { Random } from './random'
@@ -195,4 +197,43 @@ export function generateRelated(citizen: Citizen): CitizenRelated {
   }
 
   return { family, education, employment, benefits, appeals, history }
+}
+
+// Значения полей карточки (раздел details), которые не лежат в самом Citizen
+export function generateDetails(citizen: Citizen): Record<string, FieldValue> {
+  const random = createRandom(citizen.id * 31 + 5)
+  const details: Record<string, FieldValue> = {}
+
+  getAllFields().forEach((field) => {
+    if (!field.name.startsWith('details.')) {
+      return
+    }
+    const key = field.name.replace('details.', '')
+    const options = field.options ?? []
+
+    switch (field.type) {
+      case 'select':
+      case 'radio':
+      case 'autocomplete':
+        details[key] = random.pick(options)
+        break
+      case 'multiselect':
+        details[key] = options.filter(() => random.chance(0.3))
+        break
+      case 'checkbox':
+      case 'switch':
+        details[key] = random.chance(0.4)
+        break
+      case 'number':
+        details[key] = field.range ? random.int(field.range[0], field.range[1]) : 0
+        break
+      case 'date':
+        details[key] = field.range ? randomDate(random, field.range[0], field.range[1]) : ''
+        break
+      default:
+        details[key] = field.samples ? random.pick(field.samples) : ''
+    }
+  })
+
+  return details
 }
