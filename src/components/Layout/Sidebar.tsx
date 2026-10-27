@@ -42,6 +42,7 @@ function Sidebar() {
             end
             sx={{
               color: 'inherit',
+              borderLeft: '3px solid transparent',
               '&.active': { bgcolor: '#2c4d7c', color: '#fff', borderLeft: '3px solid #8fb0e0' },
             }}
           >
