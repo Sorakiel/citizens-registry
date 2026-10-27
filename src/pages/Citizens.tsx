@@ -18,22 +18,21 @@ const columns: GridColDef<Citizen>[] = [
     field: 'lastName',
     headerName: 'ФИО',
     flex: 1.5,
-    minWidth: 220,
+    minWidth: 230,
     renderCell: (params) =>
       `${params.row.lastName} ${params.row.firstName} ${params.row.middleName}`,
   },
   {
     field: 'birthDate',
     headerName: 'Дата рождения',
-    width: 130,
+    width: 135,
     valueFormatter: (value: string) => formatDate(value),
   },
-  { field: 'district', headerName: 'Район', flex: 1, minWidth: 120 },
-  { field: 'category', headerName: 'Категория', flex: 1, minWidth: 150 },
+  { field: 'district', headerName: 'Район', flex: 1, minWidth: 100 },
   {
     field: 'status',
     headerName: 'Статус',
-    width: 150,
+    width: 135,
     renderCell: (params) => <StatusChip status={params.row.status} />,
   },
 ]
