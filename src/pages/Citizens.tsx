@@ -4,9 +4,11 @@ import Typography from '@mui/material/Typography'
 import { DataGrid } from '@mui/x-data-grid'
 import type { GridColDef, GridPaginationModel, GridSortModel } from '@mui/x-data-grid'
 import { emptyFilters } from '../api/citizensApi'
+import { CITIZENS_COUNT } from '../api/generator'
+import CitizensFilters from '../components/CitizensFilters'
 import StatusChip from '../components/StatusChip'
 import { useCitizens } from '../hooks/useCitizens'
-import type { Citizen } from '../types/citizen'
+import type { Citizen, CitizenFilters } from '../types/citizen'
 import { formatDate } from '../utils/date'
 
 const columns: GridColDef<Citizen>[] = [
@@ -47,6 +49,7 @@ function Citizens() {
     pageSize: 25,
   })
   const [sortModel, setSortModel] = useState<GridSortModel>([])
+  const [filters, setFilters] = useState<CitizenFilters>(emptyFilters)
 
   const params = useMemo(
     () => ({
@@ -54,19 +57,28 @@ function Citizens() {
       pageSize: paginationModel.pageSize,
       sortField: sortModel[0]?.field as keyof Citizen | undefined,
       sortOrder: sortModel[0]?.sort ?? undefined,
-      filters: emptyFilters,
+      filters,
     }),
-    [paginationModel, sortModel],
+    [paginationModel, sortModel, filters],
   )
 
   const { rows, total, loading } = useCitizens(params)
 
+  function applyFilters(newFilters: CitizenFilters) {
+    setFilters(newFilters)
+    setPaginationModel({ ...paginationModel, page: 0 })
+  }
+
   return (
     <Box>
-      <Typography variant="h5" sx={{ mb: 2 }}>
-        Картотека граждан
-      </Typography>
-      <Box sx={{ height: 'calc(100vh - 170px)', bgcolor: 'background.paper' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 2 }}>
+        <Typography variant="h5">Картотека граждан</Typography>
+        <Typography color="text.secondary">
+          Найдено: {total.toLocaleString('ru-RU')} из {CITIZENS_COUNT.toLocaleString('ru-RU')}
+        </Typography>
+      </Box>
+      <CitizensFilters onApply={applyFilters} />
+      <Box sx={{ height: 600, bgcolor: 'background.paper' }}>
         <DataGrid
           rows={rows}
           columns={columns}
