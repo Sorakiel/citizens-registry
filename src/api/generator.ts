@@ -20,6 +20,7 @@ import {
   maritalStatuses,
   statuses,
 } from '../config/dictionaries'
+import { getAge } from '../utils/date'
 import { createRandom, randomDate } from './random'
 import type { Random } from './random'
 import {
@@ -46,6 +47,23 @@ function getMiddleName(middleName: string, isMale: boolean) {
   return middleName.replace('вич', 'вна')
 }
 
+// Категория зависит от возраста, чтобы данные выглядели правдоподобно
+function getCategory(random: Random, age: number) {
+  const available = categories.filter((category) => {
+    if (category === 'Пенсионер') {
+      return age >= 55
+    }
+    if (category === 'Студент') {
+      return age <= 30
+    }
+    if (category === 'Работающий') {
+      return age >= 18 && age < 65
+    }
+    return true
+  })
+  return random.pick(available)
+}
+
 function getSnils(random: Random) {
   const part = () => String(random.int(100, 999))
   return `${part()}-${part()}-${part()} ${random.int(10, 99)}`
@@ -62,13 +80,14 @@ function generateCitizen(id: number): Citizen {
   const lastName = getLastName(random.pick(lastNames), isMale)
   const firstName = random.pick(isMale ? maleFirstNames : femaleFirstNames)
   const middleName = getMiddleName(random.pick(maleMiddleNames), isMale)
+  const birthDate = randomDate(random, 1940, 2008)
 
   return {
     id,
     lastName,
     firstName,
     middleName,
-    birthDate: randomDate(random, 1940, 2008),
+    birthDate,
     gender: isMale ? 'Мужской' : 'Женский',
     snils: getSnils(random),
     inn: String(random.int(100000000000, 999999999999)),
@@ -78,7 +97,7 @@ function generateCitizen(id: number): Citizen {
     city: random.pick(cities),
     address: `ул. ${random.pick(streets)}, д. ${random.int(1, 120)}, кв. ${random.int(1, 200)}`,
     status: random.pick(statuses),
-    category: random.pick(categories),
+    category: getCategory(random, getAge(birthDate)),
     maritalStatus: random.pick(maritalStatuses),
     citizenship: random.chance(0.93) ? citizenships[0] : random.pick(citizenships),
     registrationDate: randomDate(random, 2015, 2026),
