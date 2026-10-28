@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react'
 import { getCitizens } from '../api/citizensApi'
 import type { GetCitizensParams } from '../api/citizensApi'
 import type { Citizen } from '../types/citizen'
+import { CITIZENS_COUNT } from '../api/generator'
 
 export function useCitizens(params: GetCitizensParams) {
   const [rows, setRows] = useState<Citizen[]>([])
   const [total, setTotal] = useState(0)
+  const [all, setAll] = useState(CITIZENS_COUNT)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -17,6 +19,7 @@ export function useCitizens(params: GetCitizensParams) {
       if (!cancelled) {
         setRows(response.rows)
         setTotal(response.total)
+        setAll(response.all)
         setLoading(false)
       }
     })
@@ -26,5 +29,5 @@ export function useCitizens(params: GetCitizensParams) {
     }
   }, [params])
 
-  return { rows, total, loading }
+  return { rows, total, all, loading }
 }

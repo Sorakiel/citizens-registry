@@ -21,6 +21,9 @@ export interface FieldConfig {
   samples?: string[]
   // для number - диапазон значений, для date - диапазон годов
   range?: [number, number]
+  required?: boolean
+  // регулярное выражение для проверки формата
+  pattern?: { value: string; message: string }
 }
 
 export interface FieldGroup {

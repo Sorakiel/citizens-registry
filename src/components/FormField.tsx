@@ -25,14 +25,23 @@ function FormField({ config, control }: FormFieldProps) {
     <Controller
       name={config.name as Path<Citizen>}
       control={control}
-      render={({ field }) => {
+      rules={{
+        required: config.required ? 'Обязательное поле' : false,
+        pattern: config.pattern
+          ? { value: new RegExp(config.pattern.value), message: config.pattern.message }
+          : undefined,
+      }}
+      render={({ field, fieldState }) => {
         const value = field.value as unknown
+        const label = config.required ? `${config.label} *` : config.label
+        const errorProps = { error: Boolean(fieldState.error), helperText: fieldState.error?.message }
 
         switch (config.type) {
           case 'number':
             return (
               <TextField
-                label={config.label}
+                label={label}
+                {...errorProps}
                 type="number"
                 value={value ?? ''}
                 onChange={(e) => field.onChange(e.target.value === '' ? '' : Number(e.target.value))}
@@ -42,7 +51,8 @@ function FormField({ config, control }: FormFieldProps) {
           case 'date':
             return (
               <TextField
-                label={config.label}
+                label={label}
+                {...errorProps}
                 type="date"
                 value={value ?? ''}
                 onChange={field.onChange}
@@ -53,7 +63,8 @@ function FormField({ config, control }: FormFieldProps) {
           case 'textarea':
             return (
               <TextField
-                label={config.label}
+                label={label}
+                {...errorProps}
                 multiline
                 minRows={2}
                 value={value ?? ''}
@@ -63,7 +74,7 @@ function FormField({ config, control }: FormFieldProps) {
 
           case 'select':
             return (
-              <TextField select label={config.label} value={value ?? ''} onChange={field.onChange}>
+              <TextField select label={label} value={value ?? ''} onChange={field.onChange} {...errorProps}>
                 {options.map((option) => (
                   <MenuItem key={option} value={option}>
                     {option}
@@ -76,7 +87,8 @@ function FormField({ config, control }: FormFieldProps) {
             return (
               <TextField
                 select
-                label={config.label}
+                label={label}
+                {...errorProps}
                 value={(value as string[]) ?? []}
                 onChange={field.onChange}
                 slotProps={{
@@ -101,7 +113,7 @@ function FormField({ config, control }: FormFieldProps) {
                 options={options}
                 value={(value as string) || null}
                 onChange={(_, newValue) => field.onChange(newValue ?? '')}
-                renderInput={(params) => <TextField {...params} label={config.label} />}
+                renderInput={(params) => <TextField {...params} label={label} />}
               />
             )
 
@@ -120,7 +132,7 @@ function FormField({ config, control }: FormFieldProps) {
           case 'checkbox':
             return (
               <FormControlLabel
-                label={config.label}
+                label={label}
                 control={
                   <Checkbox checked={Boolean(value)} onChange={(e) => field.onChange(e.target.checked)} />
                 }
@@ -130,13 +142,13 @@ function FormField({ config, control }: FormFieldProps) {
           case 'switch':
             return (
               <FormControlLabel
-                label={config.label}
+                label={label}
                 control={<Switch checked={Boolean(value)} onChange={(e) => field.onChange(e.target.checked)} />}
               />
             )
 
           default:
-            return <TextField label={config.label} value={value ?? ''} onChange={field.onChange} />
+            return <TextField label={label} value={value ?? ''} onChange={field.onChange} {...errorProps} />
         }
       }}
     />

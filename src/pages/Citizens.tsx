@@ -5,7 +5,6 @@ import Typography from '@mui/material/Typography'
 import { DataGrid } from '@mui/x-data-grid'
 import type { GridColDef, GridPaginationModel, GridSortModel } from '@mui/x-data-grid'
 import { emptyFilters } from '../api/citizensApi'
-import { CITIZENS_COUNT } from '../api/generator'
 import CitizenPreview from '../components/CitizenPreview'
 import CitizensFilters from '../components/CitizensFilters'
 import StatusChip from '../components/StatusChip'
@@ -57,7 +56,7 @@ function Citizens() {
     [paginationModel, sortModel, filters],
   )
 
-  const { rows, total, loading } = useCitizens(params)
+  const { rows, total, all, loading } = useCitizens(params)
 
   function applyFilters(newFilters: CitizenFilters) {
     setFilters(newFilters)
@@ -69,7 +68,7 @@ function Citizens() {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 2 }}>
         <Typography variant="h5">Картотека граждан</Typography>
         <Typography color="text.secondary">
-          Найдено: {total.toLocaleString('ru-RU')} из {CITIZENS_COUNT.toLocaleString('ru-RU')}
+          Найдено: {total.toLocaleString('ru-RU')} из {all.toLocaleString('ru-RU')}
         </Typography>
       </Box>
       <CitizensFilters onApply={applyFilters} />

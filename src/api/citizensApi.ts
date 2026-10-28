@@ -15,6 +15,8 @@ export interface GetCitizensParams {
 export interface CitizensResponse {
   rows: Citizen[]
   total: number
+  // сколько всего записей в картотеке без фильтров
+  all: number
 }
 
 export const emptyFilters: CitizenFilters = {
@@ -27,12 +29,46 @@ export const emptyFilters: CitizenFilters = {
   ageTo: null,
 }
 
+const STORAGE_KEY = 'citizens-registry-changes'
+
+// Правки и новые записи хранятся в браузере, чтобы не пропадали после перезагрузки
+interface Changes {
+  edited: Record<number, Citizen>
+  created: Citizen[]
+}
+
+function readChanges(): Changes {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) {
+      return JSON.parse(saved)
+    }
+  } catch {
+    // хранилище недоступно, работаем без него
+  }
+  return { edited: {}, created: [] }
+}
+
+function writeChanges() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(changes))
+  } catch {
+    // хранилище недоступно
+  }
+}
+
+const changes = readChanges()
+
 // "База данных" - массив создаётся один раз при первом запросе
 let citizens: Citizen[] = []
 
 function getAllCitizens() {
   if (citizens.length === 0) {
     citizens = generateCitizens(CITIZENS_COUNT)
+    Object.values(changes.edited).forEach((citizen) => {
+      citizens[citizen.id - 1] = citizen
+    })
+    citizens.push(...changes.created)
   }
   return citizens
 }
@@ -99,6 +135,7 @@ export function getCitizens(params: GetCitizensParams): Promise<CitizensResponse
       resolve({
         rows: list.slice(start, start + params.pageSize),
         total: list.length,
+        all: getAllCitizens().length,
       })
     }, 200)
   })
@@ -120,10 +157,47 @@ export function getCitizen(id: number): Promise<CitizenCardData | null> {
         return
       }
 
+      // у изменённых и созданных записей поля карточки уже сохранены
+      const hasDetails = Object.keys(citizen.details).length > 0
+      const isNew = id > CITIZENS_COUNT
+
       resolve({
-        citizen: { ...citizen, details: generateDetails(citizen) },
-        related: generateRelated(citizen),
+        citizen: hasDetails ? citizen : { ...citizen, details: generateDetails(citizen) },
+        related: isNew
+          ? { family: [], education: [], employment: [], benefits: [], appeals: [], history: [] }
+          : generateRelated(citizen),
       })
     }, 200)
+  })
+}
+
+export function saveCitizen(citizen: Citizen): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      getAllCitizens()[citizen.id - 1] = citizen
+
+      if (citizen.id > CITIZENS_COUNT) {
+        const index = changes.created.findIndex((item) => item.id === citizen.id)
+        changes.created[index] = citizen
+      } else {
+        changes.edited[citizen.id] = citizen
+      }
+      writeChanges()
+      resolve()
+    }, 300)
+  })
+}
+
+export function createCitizen(data: Citizen): Promise<Citizen> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const list = getAllCitizens()
+      const citizen = { ...data, id: list.length + 1 }
+
+      list.push(citizen)
+      changes.created.push(citizen)
+      writeChanges()
+      resolve(citizen)
+    }, 300)
   })
 }

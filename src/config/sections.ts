@@ -36,6 +36,14 @@ function getFieldName(name: string) {
   return coreFields.includes(name) ? name : 'details.' + name
 }
 
+function required(field: FieldConfig): FieldConfig {
+  return { ...field, required: true }
+}
+
+function withPattern(field: FieldConfig, value: string, message: string): FieldConfig {
+  return { ...field, pattern: { value, message } }
+}
+
 function text(name: string, label: string, samples?: string[]): FieldConfig {
   return { name: getFieldName(name), label, type: 'text', samples }
 }
@@ -97,10 +105,10 @@ export const sections: SectionConfig[] = [
       {
         title: 'Личные данные',
         fields: [
-          text('lastName', 'Фамилия'),
-          text('firstName', 'Имя'),
+          required(text('lastName', 'Фамилия')),
+          required(text('firstName', 'Имя')),
           text('middleName', 'Отчество'),
-          date('birthDate', 'Дата рождения', 1940, 2008),
+          required(date('birthDate', 'Дата рождения', 1940, 2008)),
           text('birthPlace', 'Место рождения', cities),
           radio('gender', 'Пол', genders),
           select('citizenship', 'Гражданство', citizenships),
@@ -113,8 +121,8 @@ export const sections: SectionConfig[] = [
       {
         title: 'Идентификаторы',
         fields: [
-          text('snils', 'СНИЛС'),
-          text('inn', 'ИНН'),
+          required(withPattern(text('snils', 'СНИЛС'), '^\\d{3}-\\d{3}-\\d{3} \\d{2}$', 'Формат: 123-456-789 00')),
+          withPattern(text('inn', 'ИНН'), '^\\d{12}$', 'ИНН состоит из 12 цифр'),
           text('oms', 'Номер полиса ОМС', ['2700 1234 5678 9012', '2700 9876 5432 1098', '2700 5555 4444 3333']),
         ],
       },
@@ -225,9 +233,9 @@ export const sections: SectionConfig[] = [
       {
         title: 'Основные контакты',
         fields: [
-          text('phone', 'Телефон'),
+          required(withPattern(text('phone', 'Телефон'), '^\\+7 \\d{3} \\d{3}-\\d{2}-\\d{2}$', 'Формат: +7 900 123-45-67')),
           text('additionalPhone', 'Дополнительный телефон', ['+7 914 111-22-33', '+7 924 555-66-77', '+7 984 000-11-22']),
-          text('email', 'Электронная почта'),
+          withPattern(text('email', 'Электронная почта'), '^\\S+@\\S+\\.\\S+$', 'Введите корректный адрес'),
           select('messenger', 'Мессенджер', ['Telegram', 'WhatsApp', 'Viber', 'Не использует']),
           text('messengerNick', 'Имя в мессенджере', ['@citizen27', '@user_dv', '@amur_man']),
         ],
@@ -264,7 +272,7 @@ export const sections: SectionConfig[] = [
         title: 'Постановка на учёт',
         fields: [
           select('status', 'Статус', statuses),
-          select('category', 'Категория', categories),
+          required(select('category', 'Категория', categories)),
           date('registrationDate', 'Дата постановки на учёт', 2015, 2026),
           select('registrationBasis', 'Основание постановки', [
             'Заявление гражданина',
